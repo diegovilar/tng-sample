@@ -1,3 +1,5 @@
+/// <reference path="./_references" />
+
 import {Application, Inject, bootstrap} from 'tng';
 
 // Modulos
@@ -7,23 +9,19 @@ import {ModuloCliente} from './components/clientes/modulo'
 import {ClienteService} from './services/cliente'
 
 @Application({
-    name: 'app',
-    selector: 'html',
-    modules: [ModuloCliente],
-    services: [ClienteService]    
+    selector: 'app',
+    services: []    
 })
-class App {
+class AppController {
     
-    @Inject('$httpProvider')
-    config($httpProvider:any) {
+    config(@Inject('$httpProvider') $httpProvider:any) {
         
     }
     
-    @Inject('$http', '$q')
-    run($http:any, $q:any) {
+    run(@Inject('$http') $http:any, @Inject('$q') $q:any) {
         
     }
     
 }
 
-bootstrap(App);
+bootstrap(AppController);

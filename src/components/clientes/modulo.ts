@@ -3,20 +3,15 @@ import {Consulta} from './consulta'
 
 @Module({
     name: 'adc-cliente',
-    modules: [],
-    components: [Consulta],
-    directives: [],
-    services: []
+    dependencies: [Consulta]
 })
-export class ModuloCliente {
+export class ModuloCliente implements Module {
     
-    @Inject('$httpProvider')
-    config($httpProvider:any) {
+    onConfig(@Inject('$httpProvider') $httpProvider:any) {
         
     }
     
-    @Inject('$http', '$q')
-    run($http:any, $q:any) {
+    onRun(@Inject('$http') $http:any, @Inject('$q') $q:any) {
         
     }
     

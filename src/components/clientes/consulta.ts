@@ -1,31 +1,24 @@
-import {Component, View, Inject, Optional} from 'tng';
-import {Route} from 'tng/router';
+import {Component, View, Inject} from 'tng';
+//import {Route} from 'tng/router';
 
 @Component({
-    selector: 'todo-app'
+    selector: 'consulta'
 })
 @View({
+    controllerAs: 'consulta',
     templateUrl: 'consulta.html'
 })
-@Route({
-    path: '/clientes/consulta'
-})
+//@Route({
+//    path: '/clientes/consulta'
+//})
 export class Consulta {
     
-    constructor(@Inject('$http') private $http:any, @Optional('$q') private $q:any) {
+    constructor(@Inject('$http') private $http:any, @Inject('$q') private $q:any) {
             
     }
     
     add(@Inject('$timeout') $timeout:any) {
         
-    }
-    
-    static config(@Inject('$httpProvider') $httpProvider:any) {
-        // execute on config phase
-    }
-    
-    static run($http:any, $q:any) {
-        // execute on run phase
     }
     
 }
