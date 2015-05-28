@@ -3,23 +3,19 @@
 import {Application, Inject, bootstrap} from 'tng';
 
 // Modulos
-import {ModuloCliente} from './components/clientes/modulo'
+import {ModuloCliente} from './views/clientes/modulo'
 
 // Serviços
-import {ClienteService} from './services/cliente'
+// import {ClienteService} from './services/cliente'
 
 @Application({
-    selector: 'app',
-    services: []    
+    selector: 'html',
+    dependencies: [ModuloCliente]
 })
 class AppController {
     
-    config(@Inject('$httpProvider') $httpProvider:any) {
-        
-    }
-    
-    run(@Inject('$http') $http:any, @Inject('$q') $q:any) {
-        
+    run() {
+        console.log('app started');
     }
     
 }

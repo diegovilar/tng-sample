@@ -1,0 +1,15 @@
+{
+  "name": "tng-sample",
+  "version": "0.0.1",
+  "private": true,
+  "homepage": "https://github.com/diegovilar/tng-sample",
+  "authors": [
+    "Diego Vilar <diegovilar@gmail.com>"
+  ],
+  "description": "Sample project using TNG",
+  "license": "MIT",
+  "dependencies": {
+    "angular": "1.4.0",
+    "reflect-metadata": "0.1.0"
+  }
+}
