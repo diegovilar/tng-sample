@@ -1,6 +1,7 @@
 /// <reference path="./_references" />
 
 import {Application, Inject, bootstrap} from 'tng';
+import {Routes} from 'tng/ui-router';
 
 // Modulos
 import {ModuloCliente} from './views/clientes/modulo'
@@ -10,7 +11,11 @@ import {ModuloCliente} from './views/clientes/modulo'
 
 @Application({
     selector: 'html',
-    dependencies: [ModuloCliente]
+    dependencies: ['ui.router', ModuloCliente]
+})
+@Routes({
+    '' : '/consulta',
+    '?' : '/consulta'
 })
 class AppController {
     

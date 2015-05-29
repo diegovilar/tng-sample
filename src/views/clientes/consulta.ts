@@ -4,9 +4,11 @@ import {View, Inject} from 'tng';
 
 @View({
     controllerAs: 'consulta',
-    templateUrl: 'consulta.html'
+    template: '{{consulta.name}}'
 })
 export class Consulta {
+    
+    name = 'consulta';
     
     constructor(@Inject('$http') private $http:ng.IHttpService, @Inject('$q') private $q:ng.IQService) {
         console.log('consulta started');

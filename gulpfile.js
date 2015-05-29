@@ -2,6 +2,7 @@
 
 var gulp = require('gulp');
 var gutil = require('gulp-util');
+var colors = gutil.colors;
 var copy = require('gulp-copy');
 var rename = require('gulp-rename');
 var browserify = require('browserify');
@@ -16,6 +17,8 @@ var fs = require('fs');
 var path = require('path');
 var del = require('del');
 var mkdir = require('mkdir-p').sync;
+var util = require('util');
+var vm = require('vm');
 
 
 
@@ -36,21 +39,10 @@ gulp.task('clean:browser', cleanBuildBrowser);
 gulp.task('clean', ['clean:build', 'clean:browser']);
 gulp.task('build', ['clean:build'], build);
 gulp.task('watch', ['build'], watch);
+gulp.task('test', ['build'], test);
 gulp.task('build:browser', ['clean:browser'], buildBrowser);
 gulp.task('watch:browser', ['clean:browser'], watchBrowser);
-
-
-
-// --
-
-/**
- * Returns a cleander task function
- */
-function createCleaner(globs) {
-    return function(cb) {
-        del(globs, cb);
-    };
-}
+gulp.task('build:browser:tests', ['clean:browser', 'build:browser'], buildBrowserTests);
 
 function cleanBuild(cb) {
     del(buildDir + '/*', cb);
@@ -78,17 +70,12 @@ function build(cb) {
     // Compile ts files
     try {
         tsc(tsconfig.files, options);
-        
-        // Copy native module
-        gulp.src(srcDir + '/native.js')
-            .pipe(copy(buildDir, {prefix: 1}))
-            .on('error', gutil.log.bind(gutil, 'Copy Error'));
-            
-        cb();
     }
     catch (e) {
-        gutil.log(gutil.colors.red('Build error:'), e.toString());
+        log(colors.red('Build error:'), inspect(e));
     }
+    
+    cb();
     
 }
 
@@ -97,19 +84,37 @@ function build(cb) {
  */
 function watch() {
     
-    var files = [
-        srcDir + '/**/*',
-        './typings/**/*',
-        tsconfigPath
-    ];
+    var files = parseTypescriptConfig().files;
     
-    files = files.concat(parseTypescriptConfig().files);
-    gutil.log(files.join(', '));
+    // We also want to monitor these files
+    files.push(srcDir + '/**');
+    files.push(tsconfigPath);    
     
     gulp.watch(files, function(event) {
-        gutil.log('File', gutil.colors.magenta(event.path), gutil.colors.yellow(event.type));
+        log('File', colors.magenta(event.path), colors.yellow(event.type));
         gulp.start(['build']);
     });
+    
+}
+
+function test(cb) {
+      
+    var context = {
+        require: require
+    };    
+    
+    var code = "require('./build/tests')";    
+    
+    try {
+        vm.runInNewContext(code, context, {displayErrors:false});
+        log(colors.green('All tests passed!'));
+    }
+    catch (e) {
+        log(colors.red('TEST ERROR:'));
+        log(e.stack);
+    }
+        
+    cb();
     
 }
 
@@ -118,34 +123,53 @@ function watch() {
  */
 function buildBrowser() {
     
-    bundle(false);
+    bundle(
+        srcDir + '/app.ts',
+        srcDir,
+        'app.js',
+        false
+    );
   
 }
 
 function watchBrowser() {
     
-    bundle(true);
+     bundle(
+        srcDir + '/app.ts',
+        srcDir,
+        'app.js',
+        true
+    );
     
 }
 
-function bundle(watch) {
+function buildBrowserTests() {
     
-    var entryFilePath = srcDir + '/main-browser.ts';    
-    var destFileName = 'puts.js';
+    bundle(
+        srcDir + '/tests.ts',
+        buildBrowserDir,
+        'tests.js',
+        false
+    );
+  
+}
+
+function bundle(entryFilePath, destPath, destFileName, watch) {
     
     var bundler;
     
     var bundlerOptions = {
-        debug: true
+        debug: true,
+        bundleExternal: false
     };
     
     if (watch) {
         bundlerOptions = assign({}, watchify.args, bundlerOptions);
         bundler = watchify(browserify(entryFilePath, bundlerOptions));
-        bundler.on('log', gutil.log);        
+        bundler.on('log', log);        
         bundler.on('update', function(ids) {
             for (var i = 0; i < ids.length; i++) {
-                gutil.log('Change detected on', gutil.colors.magenta(ids[i]));
+                log('Change detected on', colors.magenta(ids[i]));
             }
             return run();
         });
@@ -154,10 +178,14 @@ function bundle(watch) {
         bundler = browserify(entryFilePath, bundlerOptions); 
     }    
     
-    bundler.plugin('tsify', parseTypescriptConfig().compilerOptions);        
+    bundler.plugin('tsify', parseTypescriptConfig().compilerOptions);
+    
+    // bundler.require([
+    //     {file: './src/main.ts', expose: 'tng'}
+    // ]);
     
     function run() {
-        mkdir(buildBrowserDir);
+        mkdir(destPath);
         return bundler
             .bundle()
             .pipe(output(destFileName))
@@ -166,12 +194,28 @@ function bundle(watch) {
                 //.pipe(uglify())
                 //.pipe(rename(destFileName.replace(/\.js$/, '-min.js')))
             .pipe(sourcemaps.write('./'))
-            .pipe(gulp.dest(buildBrowserDir))
-            .on('error', gutil.log.bind(gutil, 'Browserify Error'));
+            .pipe(gulp.dest(destPath))
+            .on('error', log.bind(gutil, colors.red('Browserify Error')));
     }
         
     return run(); 
     
+}
+
+
+
+// -----
+
+function inspect(value, depth) {
+    
+    if (depth == null) depth = 3;
+    return util.inspect(value, true, depth, true);
+    
+}
+
+function log() {
+    var args = [].slice.call(arguments, 0);
+    gutil.log.apply(gutil, args);
 }
 
 /**
@@ -184,49 +228,5 @@ function parseTypescriptConfig(filePath) {
     }
     
     return JSON.parse(fs.readFileSync(filePath).toString());
-    
-}
-
-/**
- * 
- */
-function tsc(fileNames, options) {
-    
-    var ScriptTarget = {
-        ES3 : 0,
-        ES5 : 1,
-        ES6 : 2,
-        LATEST : 2 
-    };
-    var ModuleKind = {
-        NONE : 0,
-        COMMONJS : 1,
-        AMD : 2
-    };
-    
-    if (options) {
-        if (typeof options.target === 'string') {
-            options.target = ScriptTarget[options.target.toUpperCase()];
-        }
-        if (typeof options.module === 'string') {
-            options.module = ModuleKind[options.module.toUpperCase()];
-        }
-    }
-    
-    var program = ts.createProgram(fileNames, options);
-    var emitResult = program.emit();
-    var allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
-    
-    allDiagnostics.forEach(function (diagnostic) {
-        var _a = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start), line = _a.line, character = _a.character;
-        var message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-        throw new Error(diagnostic.file.fileName + " (" + (line + 1) + "," + (character + 1) + "): " + message);
-    });
-    
-    //var exitCode = emitResult.emitSkipped ? 1 : 0;
-    //if (exitCode) {
-    //    grunt.log(`Process exiting with code '${exitCode}'.`);
-    //}
-    //return exitCode;
     
 }

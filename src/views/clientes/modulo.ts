@@ -2,9 +2,13 @@
 
 import {Module, Inject} from 'tng';
 import {Consulta} from './consulta'
+import {States, Routes} from 'tng/ui-router';
 
 @Module({
-    dependencies: [Consulta]
+    dependencies: []
+})
+@States({
+    'consulta' : {path: '/consulta', view: Consulta}
 })
 export class ModuloCliente implements Module {
     

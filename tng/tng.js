@@ -1,11 +1,6 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function (global){
-var tng = require('./main');
-global.tng = tng;
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-
-},{"./main":13}],2:[function(require,module,exports){
+},{}],"tng/animation":[function(require,module,exports){
 /// <reference path="./_references" />
 var reflection_1 = require('./reflection');
 var di_1 = require('./di');
@@ -44,7 +39,7 @@ function registerAnimation(animationClass, ngModule) {
 }
 exports.registerAnimation = registerAnimation;
 
-},{"./di":9,"./reflection":15,"./utils":19}],3:[function(require,module,exports){
+},{"./di":"tng/di","./reflection":"tng/reflection","./utils":"tng/utils"}],"tng/application":[function(require,module,exports){
 /// <reference path="./_references" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -72,7 +67,7 @@ exports.ApplicationAnnotation = ApplicationAnnotation;
  */
 exports.Application = utils_1.makeDecorator(ApplicationAnnotation);
 
-},{"./module":14,"./utils":19}],4:[function(require,module,exports){
+},{"./module":"tng/module","./utils":"tng/utils"}],"tng/bootstrap":[function(require,module,exports){
 /// <reference path="./_references" />
 /*
 Applications must have:
@@ -126,7 +121,7 @@ exports.bootstrap = bootstrap;
 //    
 //} 
 
-},{"./application":3,"./module":14,"./reflection":15,"./utils":19}],5:[function(require,module,exports){
+},{"./application":"tng/application","./module":"tng/module","./reflection":"tng/reflection","./utils":"tng/utils"}],"tng/component-view":[function(require,module,exports){
 /// <reference path="./_references" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -168,7 +163,7 @@ exports.ComponentViewAnnotation = ComponentViewAnnotation;
  */
 exports.ComponentView = utils_1.makeDecorator(ComponentViewAnnotation);
 
-},{"./utils":19,"./view":21}],6:[function(require,module,exports){
+},{"./utils":"tng/utils","./view":"tng/view"}],"tng/component":[function(require,module,exports){
 /// <reference path="./_references" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -270,7 +265,7 @@ function makeComponentFactory(componentClass) {
 }
 exports.makeComponentFactory = makeComponentFactory;
 
-},{"./component-view":5,"./di":9,"./directive":10,"./reflection":15,"./utils":19}],7:[function(require,module,exports){
+},{"./component-view":"tng/component-view","./di":"tng/di","./directive":"tng/directive","./reflection":"tng/reflection","./utils":"tng/utils"}],"tng/constant":[function(require,module,exports){
 /// <reference path="./_references" />
 var utils_1 = require('./utils');
 var reflection_1 = require('./reflection');
@@ -316,7 +311,19 @@ function registerConstant(constant, ngModule) {
 }
 exports.registerConstant = registerConstant;
 
-},{"./reflection":15,"./utils":19}],8:[function(require,module,exports){
+},{"./reflection":"tng/reflection","./utils":"tng/utils"}],"tng/controller":[function(require,module,exports){
+/// <reference path="./_references" />
+// import {makeDecorator} from './utils';
+// export interface ControllerOptions {
+// }
+// export class ControllerAnnotation {
+//     constructor(options:ControllerOptions) {
+//     }
+// }
+// type ControllerAnnotationDecorator = (options:ControllerOptions) => ClassDecorator;
+// export var Controller = <ControllerAnnotationDecorator> makeDecorator(ControllerAnnotation);
+
+},{}],"tng/decorator":[function(require,module,exports){
 /// <reference path="./_references" />
 var di_1 = require('./di');
 var reflection_1 = require('./reflection');
@@ -361,60 +368,7 @@ function registerDecorator(decoratorClass, ngModule) {
 }
 exports.registerDecorator = registerDecorator;
 
-},{"./di":9,"./reflection":15,"./utils":19}],9:[function(require,module,exports){
-/// <reference path="./_references" />
-/**
- * Annotates a function with information of dependencies to be injected as parameters
- *
- * * Overrides previous annotation (logs warning)
- * * All parameters should be annotated (logs warning)
- * * Dependencies will be injected in the order they are specified in the dependencies parameter
- *
- * @param dependencies Names of the dependencies to be injected, in order
- * @returns The provided function
- */
-function bind(dependencies, func) {
-    // TODO warn about overriding annotation
-    // TODO warn about mismatching number of parameters and dependencies
-    func.$inject = dependencies.slice();
-    return func;
-}
-exports.bind = bind;
-/**
- * A decorator to annotate method parameterss with dependencies to be injected
- *
- * * Overrides previous annotation (logs warning)
- * * All parameters should be annotated (logs warning)
- *
- * @param dependency The name of the dependency to be injected
- */
-function Inject(dependency) {
-    return function (target, propertyKey, parameterIndex) {
-        // TODO warn about overriding annotation
-        // TODO warn about mismatching number of parameters and dependencies
-        // If propertyKey is defined, we're decorating a parameter of a method
-        // If not, we're decorating a parameter of class constructor
-        target = (typeof propertyKey == 'undefined') ? target : target = target[propertyKey];
-        // TODO what about missing elements in the $inject arrey?
-        // ie. annotated the 2nd but not the 1st parameter
-        var $inject = (target.$inject = target.$inject || []);
-        $inject[parameterIndex] = dependency;
-    };
-}
-exports.Inject = Inject;
-/**
- * Inspects an object for dependency injection annotation
- *
- * @internal
- *
- * @param target The object to be inspected
- */
-function hasInjectAnnotation(target) {
-    return !target ? false : target.hasOwnProperty('$inject');
-}
-exports.hasInjectAnnotation = hasInjectAnnotation;
-
-},{}],10:[function(require,module,exports){
+},{"./di":"tng/di","./reflection":"tng/reflection","./utils":"tng/utils"}],"tng/directive":[function(require,module,exports){
 /// <reference path="./_references" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -562,7 +516,60 @@ function registerDirective(directiveClass, ngModule) {
 exports.registerDirective = registerDirective;
 var _a;
 
-},{"./di":9,"./reflection":15,"./utils":19}],11:[function(require,module,exports){
+},{"./di":"tng/di","./reflection":"tng/reflection","./utils":"tng/utils"}],"tng/di":[function(require,module,exports){
+/// <reference path="./_references" />
+/**
+ * Annotates a function with information of dependencies to be injected as parameters
+ *
+ * * Overrides previous annotation (logs warning)
+ * * All parameters should be annotated (logs warning)
+ * * Dependencies will be injected in the order they are specified in the dependencies parameter
+ *
+ * @param dependencies Names of the dependencies to be injected, in order
+ * @returns The provided function
+ */
+function bind(dependencies, func) {
+    // TODO warn about overriding annotation
+    // TODO warn about mismatching number of parameters and dependencies
+    func.$inject = dependencies.slice();
+    return func;
+}
+exports.bind = bind;
+/**
+ * A decorator to annotate method parameterss with dependencies to be injected
+ *
+ * * Overrides previous annotation (logs warning)
+ * * All parameters should be annotated (logs warning)
+ *
+ * @param dependency The name of the dependency to be injected
+ */
+function Inject(dependency) {
+    return function (target, propertyKey, parameterIndex) {
+        // TODO warn about overriding annotation
+        // TODO warn about mismatching number of parameters and dependencies
+        // If propertyKey is defined, we're decorating a parameter of a method
+        // If not, we're decorating a parameter of class constructor
+        target = (typeof propertyKey == 'undefined') ? target : target = target[propertyKey];
+        // TODO what about missing elements in the $inject arrey?
+        // ie. annotated the 2nd but not the 1st parameter
+        var $inject = (target.$inject = target.$inject || []);
+        $inject[parameterIndex] = dependency;
+    };
+}
+exports.Inject = Inject;
+/**
+ * Inspects an object for dependency injection annotation
+ *
+ * @internal
+ *
+ * @param target The object to be inspected
+ */
+function hasInjectAnnotation(target) {
+    return !target ? false : target.hasOwnProperty('$inject');
+}
+exports.hasInjectAnnotation = hasInjectAnnotation;
+
+},{}],"tng/filter":[function(require,module,exports){
 /// <reference path="./_references" />
 var reflection_1 = require('./reflection');
 var utils_1 = require('./utils');
@@ -601,47 +608,7 @@ function registerFilter(filterClass, ngModule) {
 }
 exports.registerFilter = registerFilter;
 
-},{"./di":9,"./reflection":15,"./utils":19}],12:[function(require,module,exports){
-
-},{}],13:[function(require,module,exports){
-require('./globals'); //for side-effects
-var di_1 = require('./di');
-exports.Inject = di_1.Inject;
-exports.bind = di_1.bind;
-var value_1 = require('./value');
-exports.Value = value_1.Value;
-var constant_1 = require('./constant');
-exports.Constant = constant_1.Constant;
-var filter_1 = require('./filter');
-exports.Filter = filter_1.Filter;
-var animation_1 = require('./animation');
-exports.Animation = animation_1.Animation;
-var service_1 = require('./service');
-exports.Service = service_1.Service;
-var decorator_1 = require('./decorator');
-exports.Decorator = decorator_1.Decorator;
-var view_1 = require('./view');
-exports.View = view_1.View;
-var component_view_1 = require('./component-view');
-exports.ComponentView = component_view_1.ComponentView;
-var directive_1 = require('./directive');
-exports.Directive = directive_1.Directive;
-var component_1 = require('./component');
-exports.Component = component_1.Component;
-var module_1 = require('./module');
-exports.Module = module_1.Module;
-exports.unwrapModule = module_1.unwrapModule;
-var application_1 = require('./application');
-exports.Application = application_1.Application;
-var bootstrap_1 = require('./bootstrap');
-exports.bootstrap = bootstrap_1.bootstrap;
-// TODO extract
-var states_1 = require('./ui-router/states');
-exports.States = states_1.States;
-var routes_1 = require('./ui-router/routes');
-exports.Routes = routes_1.Routes;
-
-},{"./animation":2,"./application":3,"./bootstrap":4,"./component":6,"./component-view":5,"./constant":7,"./decorator":8,"./di":9,"./directive":10,"./filter":11,"./globals":12,"./module":14,"./service":16,"./ui-router/routes":17,"./ui-router/states":18,"./value":20,"./view":21}],14:[function(require,module,exports){
+},{"./di":"tng/di","./reflection":"tng/reflection","./utils":"tng/utils"}],"tng/module":[function(require,module,exports){
 /// <reference path="./_references" />
 var reflection_1 = require('./reflection');
 var utils_1 = require('./utils');
@@ -656,6 +623,7 @@ var directive_1 = require('./directive');
 var component_1 = require('./component');
 var states_1 = require('./ui-router/states');
 var routes_1 = require('./ui-router/routes');
+var PUBLISHED_ANNOTATION_KEY = 'tng:module-published-as';
 /**
  * @internal
  */
@@ -682,6 +650,10 @@ exports.ModuleAnnotation = ModuleAnnotation;
  * A decorator to annotate a class as being a module
  */
 exports.Module = utils_1.makeDecorator(ModuleAnnotation);
+var moduleCount = 0;
+function getNewModuleName() {
+    return "tng_generated_module#" + ++moduleCount;
+}
 /**
  * @internal
  */
@@ -710,7 +682,12 @@ function registerModule(moduleClass, name) {
             modules.push(dep);
         }
         else if (reflection_1.hasAnnotation(dep, ModuleAnnotation)) {
-            modules.push(registerModule(dep).name);
+            if (reflection_1.Reflect.hasOwnMetadata(PUBLISHED_ANNOTATION_KEY, dep)) {
+                modules.push(reflection_1.Reflect.getOwnMetadata(PUBLISHED_ANNOTATION_KEY, dep));
+            }
+            else {
+                modules.push(registerModule(dep).name);
+            }
         }
         else if (reflection_1.hasAnnotation(dep, constant_1.ConstantAnnotation, 'constant')) {
             constants.push(dep);
@@ -741,7 +718,7 @@ function registerModule(moduleClass, name) {
             throw new Error("I don't recognize what kind of dependency is this: " + dep);
         }
     }
-    name = name || moduleNotes.name || 'TODO RANDOM';
+    name = name || moduleNotes.name || getNewModuleName();
     // Register the module on Angular
     var ngModule = angular.module(name, modules);
     // Instantiate the module
@@ -808,6 +785,7 @@ function registerModule(moduleClass, name) {
         var item = directives[_l];
         directive_1.registerDirective(item, ngModule);
     }
+    reflection_1.Reflect.defineMetadata(PUBLISHED_ANNOTATION_KEY, name, moduleClass);
     return ngModule;
 }
 exports.registerModule = registerModule;
@@ -816,7 +794,7 @@ exports.unwrapModule = exports.registerModule;
  * Unwraps a TNG module, registering it and its dependencies on Angular.
  */
 
-},{"./animation":2,"./component":6,"./constant":7,"./decorator":8,"./directive":10,"./filter":11,"./reflection":15,"./service":16,"./ui-router/routes":17,"./ui-router/states":18,"./utils":19,"./value":20}],15:[function(require,module,exports){
+},{"./animation":"tng/animation","./component":"tng/component","./constant":"tng/constant","./decorator":"tng/decorator","./directive":"tng/directive","./filter":"tng/filter","./reflection":"tng/reflection","./service":"tng/service","./ui-router/routes":"tng/ui-router/routes","./ui-router/states":"tng/ui-router/states","./utils":"tng/utils","./value":"tng/value"}],"tng/reflection":[function(require,module,exports){
 /// <reference path="./_references" />
 exports.ANNOTATIONS_METADATA_KEY = 'tng';
 var _Reflect = Reflect;
@@ -850,7 +828,7 @@ function hasAnnotation(target, type, key) {
 }
 exports.hasAnnotation = hasAnnotation;
 
-},{}],16:[function(require,module,exports){
+},{}],"tng/service":[function(require,module,exports){
 /// <reference path="./_references" />
 var reflection_1 = require('./reflection');
 var utils_1 = require('./utils');
@@ -894,7 +872,7 @@ function registerService(serviceClass, ngModule) {
 }
 exports.registerService = registerService;
 
-},{"./reflection":15,"./utils":19}],17:[function(require,module,exports){
+},{"./reflection":"tng/reflection","./utils":"tng/utils"}],"tng/ui-router/routes":[function(require,module,exports){
 /// <reference path="../_references" />
 var di_1 = require('../di');
 var utils_1 = require('../utils');
@@ -935,7 +913,7 @@ function registerRoutes(moduleController, ngModule) {
 }
 exports.registerRoutes = registerRoutes;
 
-},{"../di":9,"../reflection":15,"../utils":19}],18:[function(require,module,exports){
+},{"../di":"tng/di","../reflection":"tng/reflection","../utils":"tng/utils"}],"tng/ui-router/states":[function(require,module,exports){
 /// <reference path="../_references" />
 var di_1 = require('../di');
 var utils_1 = require('../utils');
@@ -981,8 +959,7 @@ function translateToUiState(state) {
     var translatedState = {};
     translatedState.name = state.name;
     translatedState.url = state.path;
-    translatedState.abstract = state.abstract;
-    translatedState.name = state.name;
+    translatedState.abstract = !!state.abstract;
     // If the state has a parent, we force the string way
     if (state.parent) {
         var parent_1 = state.parent;
@@ -1018,14 +995,20 @@ function extractViewData(viewModel) {
     var template = utils_1.merge.apply(void 0, [utils_1.create(view_1.ViewAnnotation)].concat(notes));
     var data = {};
     data.controller = viewModel;
-    data.controller = template.controllerAs;
+    data.controllerAs = template.controllerAs;
     data.template = template.template;
     data.templateUrl = template.templateUrl;
     // TODO style?
     return data;
 }
 
-},{"../di":9,"../reflection":15,"../utils":19,"../view":21}],19:[function(require,module,exports){
+},{"../di":"tng/di","../reflection":"tng/reflection","../utils":"tng/utils","../view":"tng/view"}],"tng/ui-router":[function(require,module,exports){
+var routes_1 = require('./ui-router/routes');
+exports.Routes = routes_1.Routes;
+var states_1 = require('./ui-router/states');
+exports.States = states_1.States;
+
+},{"./ui-router/routes":"tng/ui-router/routes","./ui-router/states":"tng/ui-router/states"}],"tng/utils":[function(require,module,exports){
 /// <reference path="./_references" />
 var reflection_1 = require('./reflection');
 exports.isDefined = angular.isDefined;
@@ -1147,7 +1130,7 @@ function bindAll(host) {
 }
 exports.bindAll = bindAll;
 
-},{"./reflection":15}],20:[function(require,module,exports){
+},{"./reflection":"tng/reflection"}],"tng/value":[function(require,module,exports){
 /// <reference path="./_references" />
 var utils_1 = require('./utils');
 var reflection_1 = require('./reflection');
@@ -1193,7 +1176,7 @@ function registerValue(value, ngModule) {
 }
 exports.registerValue = registerValue;
 
-},{"./reflection":15,"./utils":19}],21:[function(require,module,exports){
+},{"./reflection":"tng/reflection","./utils":"tng/utils"}],"tng/view":[function(require,module,exports){
 /// <reference path="./_references" />
 var utils_1 = require('./utils');
 /**
@@ -1215,7 +1198,45 @@ exports.ViewAnnotation = ViewAnnotation;
  */
 exports.View = utils_1.makeDecorator(ViewAnnotation);
 
-},{"./utils":19}]},{},[1])
+},{"./utils":"tng/utils"}],"tng":[function(require,module,exports){
+require('./globals'); //for side-effects
+var di_1 = require('./di');
+exports.Inject = di_1.Inject;
+exports.bind = di_1.bind;
+var value_1 = require('./value');
+exports.Value = value_1.Value;
+var constant_1 = require('./constant');
+exports.Constant = constant_1.Constant;
+var filter_1 = require('./filter');
+exports.Filter = filter_1.Filter;
+var animation_1 = require('./animation');
+exports.Animation = animation_1.Animation;
+var service_1 = require('./service');
+exports.Service = service_1.Service;
+var decorator_1 = require('./decorator');
+exports.Decorator = decorator_1.Decorator;
+var view_1 = require('./view');
+exports.View = view_1.View;
+var component_view_1 = require('./component-view');
+exports.ComponentView = component_view_1.ComponentView;
+var directive_1 = require('./directive');
+exports.Directive = directive_1.Directive;
+var component_1 = require('./component');
+exports.Component = component_1.Component;
+var module_1 = require('./module');
+exports.Module = module_1.Module;
+exports.unwrapModule = module_1.unwrapModule;
+var application_1 = require('./application');
+exports.Application = application_1.Application;
+var bootstrap_1 = require('./bootstrap');
+exports.bootstrap = bootstrap_1.bootstrap;
+// TODO extract
+var states_1 = require('./ui-router/states');
+exports.States = states_1.States;
+var routes_1 = require('./ui-router/routes');
+exports.Routes = routes_1.Routes;
+
+},{"./animation":"tng/animation","./application":"tng/application","./bootstrap":"tng/bootstrap","./component":"tng/component","./component-view":"tng/component-view","./constant":"tng/constant","./decorator":"tng/decorator","./di":"tng/di","./directive":"tng/directive","./filter":"tng/filter","./globals":1,"./module":"tng/module","./service":"tng/service","./ui-router/routes":"tng/ui-router/routes","./ui-router/states":"tng/ui-router/states","./value":"tng/value","./view":"tng/view"}]},{},["tng"])
 
 
 //# sourceMappingURL=tng.js.map
