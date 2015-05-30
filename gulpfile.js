@@ -19,6 +19,7 @@ var del = require('del');
 var mkdir = require('mkdir-p').sync;
 var util = require('util');
 var vm = require('vm');
+var tsify = require('tsify');
 
 
 
@@ -37,11 +38,13 @@ gulp.task('default', ['build', 'build:browser']);
 gulp.task('clean:build', cleanBuild);
 gulp.task('clean:browser', cleanBuildBrowser);
 gulp.task('clean', ['clean:build', 'clean:browser']);
-gulp.task('build', ['clean:build'], build);
-gulp.task('watch', ['build'], watch);
+// gulp.task('build', ['clean:build'], build);
+// gulp.task('watch', ['build'], watch);
 gulp.task('test', ['build'], test);
 gulp.task('build:browser', ['clean:browser'], buildBrowser);
+gulp.task('build', ['clean:browser'], buildBrowser);
 gulp.task('watch:browser', ['clean:browser'], watchBrowser);
+gulp.task('watch', ['clean:browser'], watchBrowser);
 gulp.task('build:browser:tests', ['clean:browser', 'build:browser'], buildBrowserTests);
 
 function cleanBuild(cb) {
@@ -178,11 +181,7 @@ function bundle(entryFilePath, destPath, destFileName, watch) {
         bundler = browserify(entryFilePath, bundlerOptions); 
     }    
     
-    bundler.plugin('tsify', parseTypescriptConfig().compilerOptions);
-    
-    // bundler.require([
-    //     {file: './src/main.ts', expose: 'tng'}
-    // ]);
+    bundler.plugin(tsify, parseTypescriptConfig().compilerOptions);
     
     function run() {
         mkdir(destPath);
@@ -191,8 +190,6 @@ function bundle(entryFilePath, destPath, destFileName, watch) {
             .pipe(output(destFileName))
             .pipe(buffer())
             .pipe(sourcemaps.init({loadMaps: true}))
-                //.pipe(uglify())
-                //.pipe(rename(destFileName.replace(/\.js$/, '-min.js')))
             .pipe(sourcemaps.write('./'))
             .pipe(gulp.dest(destPath))
             .on('error', log.bind(gutil, colors.red('Browserify Error')));

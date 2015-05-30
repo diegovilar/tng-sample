@@ -1,6 +1,4 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-
-},{}],"tng/animation":[function(require,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"tng/animation":[function(require,module,exports){
 /// <reference path="./_references" />
 var reflection_1 = require('./reflection');
 var di_1 = require('./di');
@@ -641,7 +639,9 @@ var ModuleAnnotation = (function () {
         this.animations = null;
         this.values = null;
         this.constants = null;
-        utils_1.setIfInterface(this, options);
+        if (options) {
+            utils_1.setIfInterface(this, options);
+        }
     }
     return ModuleAnnotation;
 })();
@@ -674,48 +674,52 @@ function registerModule(moduleClass, name) {
     var components = [];
     var directives = [];
     var modules = [];
-    // TODO optimize this.. to much reflection queries
-    for (var _i = 0, _a = moduleNotes.dependencies; _i < _a.length; _i++) {
-        var dep = _a[_i];
-        // Regular angular module
-        if (utils_2.isString(dep)) {
-            modules.push(dep);
-        }
-        else if (reflection_1.hasAnnotation(dep, ModuleAnnotation)) {
-            if (reflection_1.Reflect.hasOwnMetadata(PUBLISHED_ANNOTATION_KEY, dep)) {
-                modules.push(reflection_1.Reflect.getOwnMetadata(PUBLISHED_ANNOTATION_KEY, dep));
+    // TODO optimize this.. to much reflection queries    
+    if (moduleNotes.dependencies) {
+        for (var _i = 0, _a = moduleNotes.dependencies; _i < _a.length; _i++) {
+            var dep = _a[_i];
+            // Regular angular module
+            if (utils_2.isString(dep)) {
+                modules.push(dep);
+            }
+            else if (reflection_1.hasAnnotation(dep, ModuleAnnotation)) {
+                // If the module has alrady been published to Angular, we add it's name
+                // to de dependency list
+                if (reflection_1.Reflect.hasOwnMetadata(PUBLISHED_ANNOTATION_KEY, dep)) {
+                    modules.push(reflection_1.Reflect.getOwnMetadata(PUBLISHED_ANNOTATION_KEY, dep));
+                }
+                else {
+                    modules.push(registerModule(dep).name);
+                }
+            }
+            else if (reflection_1.hasAnnotation(dep, constant_1.ConstantAnnotation, 'constant')) {
+                constants.push(dep);
+            }
+            else if (reflection_1.hasAnnotation(dep, value_1.ValueAnnotation, 'value')) {
+                values.push(dep);
+            }
+            else if (reflection_1.hasAnnotation(dep, service_1.ServiceAnnotation)) {
+                services.push(dep);
+            }
+            else if (reflection_1.hasAnnotation(dep, decorator_1.DecoratorAnnotation)) {
+                decorators.push(dep);
+            }
+            else if (reflection_1.hasAnnotation(dep, filter_1.FilterAnnotation)) {
+                filters.push(dep);
+            }
+            else if (reflection_1.hasAnnotation(dep, animation_1.AnimationAnnotation)) {
+                animations.push(dep);
+            }
+            else if (reflection_1.hasAnnotation(dep, component_1.ComponentAnnotation)) {
+                components.push(dep);
+            }
+            else if (reflection_1.hasAnnotation(dep, directive_1.DirectiveAnnotation)) {
+                directives.push(dep);
             }
             else {
-                modules.push(registerModule(dep).name);
+                // TODO WTF?
+                throw new Error("I don't recognize what kind of dependency is this: " + dep);
             }
-        }
-        else if (reflection_1.hasAnnotation(dep, constant_1.ConstantAnnotation, 'constant')) {
-            constants.push(dep);
-        }
-        else if (reflection_1.hasAnnotation(dep, value_1.ValueAnnotation, 'value')) {
-            values.push(dep);
-        }
-        else if (reflection_1.hasAnnotation(dep, service_1.ServiceAnnotation)) {
-            services.push(dep);
-        }
-        else if (reflection_1.hasAnnotation(dep, decorator_1.DecoratorAnnotation)) {
-            decorators.push(dep);
-        }
-        else if (reflection_1.hasAnnotation(dep, filter_1.FilterAnnotation)) {
-            filters.push(dep);
-        }
-        else if (reflection_1.hasAnnotation(dep, animation_1.AnimationAnnotation)) {
-            animations.push(dep);
-        }
-        else if (reflection_1.hasAnnotation(dep, component_1.ComponentAnnotation)) {
-            components.push(dep);
-        }
-        else if (reflection_1.hasAnnotation(dep, directive_1.DirectiveAnnotation)) {
-            directives.push(dep);
-        }
-        else {
-            // TODO WTF?
-            throw new Error("I don't recognize what kind of dependency is this: " + dep);
         }
     }
     name = name || moduleNotes.name || getNewModuleName();
@@ -726,7 +730,7 @@ function registerModule(moduleClass, name) {
     // Register config functions
     var configFns = [];
     if (utils_2.isFunction(module.onConfig))
-        configFns.push(module.onConfig.bind(module));
+        configFns.push(utils_2.safeBind(module.onConfig, module));
     if (moduleNotes.config) {
         if (utils_2.isFunction(moduleNotes.config))
             configFns.push(moduleNotes.config);
@@ -740,7 +744,7 @@ function registerModule(moduleClass, name) {
     // Register initialization functions
     var runFns = [];
     if (utils_2.isFunction(module.onRun))
-        runFns.push(module.onRun.bind(module));
+        runFns.push(utils_2.safeBind(module.onRun, module));
     if (moduleNotes.run) {
         if (utils_2.isFunction(moduleNotes.run))
             runFns.push(moduleNotes.run);
@@ -789,9 +793,9 @@ function registerModule(moduleClass, name) {
     return ngModule;
 }
 exports.registerModule = registerModule;
-exports.unwrapModule = exports.registerModule;
+exports.publishModule = exports.registerModule;
 /**
- * Unwraps a TNG module, registering it and its dependencies on Angular.
+ * Publishe a TNG module, registering it and its dependencies on Angular.
  */
 
 },{"./animation":"tng/animation","./component":"tng/component","./constant":"tng/constant","./decorator":"tng/decorator","./directive":"tng/directive","./filter":"tng/filter","./reflection":"tng/reflection","./service":"tng/service","./ui-router/routes":"tng/ui-router/routes","./ui-router/states":"tng/ui-router/states","./utils":"tng/utils","./value":"tng/value"}],"tng/reflection":[function(require,module,exports){
@@ -957,9 +961,12 @@ function registerStates(moduleController, ngModule) {
 exports.registerStates = registerStates;
 function translateToUiState(state) {
     var translatedState = {};
-    translatedState.name = state.name;
-    translatedState.url = state.path;
-    translatedState.abstract = !!state.abstract;
+    if (state.name)
+        translatedState.name = state.name;
+    if (state.path)
+        translatedState.url = state.path;
+    if (state.abstract)
+        translatedState.abstract = state.abstract;
     // If the state has a parent, we force the string way
     if (state.parent) {
         var parent_1 = state.parent;
@@ -995,9 +1002,12 @@ function extractViewData(viewModel) {
     var template = utils_1.merge.apply(void 0, [utils_1.create(view_1.ViewAnnotation)].concat(notes));
     var data = {};
     data.controller = viewModel;
-    data.controllerAs = template.controllerAs;
-    data.template = template.template;
-    data.templateUrl = template.templateUrl;
+    if (template.controllerAs)
+        data.controllerAs = template.controllerAs;
+    if (template.template)
+        data.template = template.template;
+    if (template.templateUrl)
+        data.templateUrl = template.templateUrl;
     // TODO style?
     return data;
 }
@@ -1122,13 +1132,19 @@ function bindAll(host) {
     if (aux) {
         for (var key in aux) {
             if (exports.isFunction(aux[key])) {
-                aux[key] = aux[key].bind(aux);
+                aux[key] = safeBind(aux[key], aux);
             }
         }
     }
     return host;
 }
 exports.bindAll = bindAll;
+function safeBind(func, context) {
+    var bound = func.bind(context);
+    exports.forEach(func, function (value, name) { return bound[name] = value; });
+    return bound;
+}
+exports.safeBind = safeBind;
 
 },{"./reflection":"tng/reflection"}],"tng/value":[function(require,module,exports){
 /// <reference path="./_references" />
@@ -1199,7 +1215,6 @@ exports.ViewAnnotation = ViewAnnotation;
 exports.View = utils_1.makeDecorator(ViewAnnotation);
 
 },{"./utils":"tng/utils"}],"tng":[function(require,module,exports){
-require('./globals'); //for side-effects
 var di_1 = require('./di');
 exports.Inject = di_1.Inject;
 exports.bind = di_1.bind;
@@ -1225,18 +1240,13 @@ var component_1 = require('./component');
 exports.Component = component_1.Component;
 var module_1 = require('./module');
 exports.Module = module_1.Module;
-exports.unwrapModule = module_1.unwrapModule;
+exports.publishModule = module_1.publishModule;
 var application_1 = require('./application');
 exports.Application = application_1.Application;
 var bootstrap_1 = require('./bootstrap');
 exports.bootstrap = bootstrap_1.bootstrap;
-// TODO extract
-var states_1 = require('./ui-router/states');
-exports.States = states_1.States;
-var routes_1 = require('./ui-router/routes');
-exports.Routes = routes_1.Routes;
 
-},{"./animation":"tng/animation","./application":"tng/application","./bootstrap":"tng/bootstrap","./component":"tng/component","./component-view":"tng/component-view","./constant":"tng/constant","./decorator":"tng/decorator","./di":"tng/di","./directive":"tng/directive","./filter":"tng/filter","./globals":1,"./module":"tng/module","./service":"tng/service","./ui-router/routes":"tng/ui-router/routes","./ui-router/states":"tng/ui-router/states","./value":"tng/value","./view":"tng/view"}]},{},["tng"])
+},{"./animation":"tng/animation","./application":"tng/application","./bootstrap":"tng/bootstrap","./component":"tng/component","./component-view":"tng/component-view","./constant":"tng/constant","./decorator":"tng/decorator","./di":"tng/di","./directive":"tng/directive","./filter":"tng/filter","./module":"tng/module","./service":"tng/service","./value":"tng/value","./view":"tng/view"}]},{},[])
 
 
 //# sourceMappingURL=tng.js.map

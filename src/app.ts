@@ -19,7 +19,16 @@ import {ModuloCliente} from './views/clientes/modulo'
 })
 class AppController {
     
-    run() {
+    constructor() {
+        console.debug(<string><any>arguments);
+        console.log('app controller instantiated');
+    }
+    
+    onConfig() {
+        console.log('app configured');
+    }
+
+    onRun() {
         console.log('app started');
     }
     

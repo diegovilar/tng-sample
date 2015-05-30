@@ -1,10 +1,13 @@
 /// <reference path="../../_references" />
 
 import {View, Inject} from 'tng';
+import {pathTo} from '../../utils';
 
 @View({
     controllerAs: 'consulta',
-    template: '{{consulta.name}}'
+    // template: '{{consulta.name}}',
+    // templateUrl: 'views/clientes/consulta.html'
+    templateUrl: pathTo(`${__dirname}/consulta.html`)
 })
 export class Consulta {
     
@@ -19,3 +22,6 @@ export class Consulta {
     // }
     
 }
+
+console.log(`__filename = ${__filename}`);
+console.log(`__dirname = ${__dirname}`);
